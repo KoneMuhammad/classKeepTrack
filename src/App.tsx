@@ -95,6 +95,62 @@ function useReveal() {
   return ref;
 }
 
+const MATH_CALC_SYMBOLS = ["∑", "∫", "π", "√", "Δ", "∞", "θ", "λ", "∂", "φ"];
+
+function AnimatedCounter({ count }: { count: number }) {
+  const [display, setDisplay] = useState(0);
+  const [symbols, setSymbols] = useState<string[]>([]);
+  const [calculating, setCalculating] = useState(true);
+
+  useEffect(() => {
+    setCalculating(true);
+    const start = Date.now();
+
+    let flashInterval: ReturnType<typeof setInterval>;
+    flashInterval = setInterval(() => {
+      setSymbols(
+        Array.from({ length: 3 }, () =>
+          MATH_CALC_SYMBOLS[Math.floor(Math.random() * MATH_CALC_SYMBOLS.length)]
+        )
+      );
+    }, 150);
+
+    const countInterval = setInterval(() => {
+      const elapsed = Date.now() - start;
+      if (elapsed > 1200) {
+        clearInterval(countInterval);
+        clearInterval(flashInterval);
+        setDisplay(count);
+        setSymbols([]);
+        setCalculating(false);
+      } else {
+        const progress = elapsed / 1200;
+        const range = Math.max(count * 2, 50);
+        const near = Math.floor(count * progress * (0.5 + Math.random() * 0.5));
+        setDisplay(Math.min(near + Math.floor(Math.random() * 20), range));
+      }
+    }, 50);
+
+    return () => {
+      clearInterval(countInterval);
+      clearInterval(flashInterval);
+    };
+  }, [count]);
+
+  return (
+    <div className={`counter-anim ${calculating ? "is-calculating" : "is-done"}`}>
+      <div className="counter-math-symbols">
+        {symbols.map((s, i) => (
+          <span key={i} className="counter-float-symbol" style={{ animationDelay: `${i * 0.1}s` }}>
+            {s}
+          </span>
+        ))}
+      </div>
+      <span className="counter-number">{display.toLocaleString()}</span>
+    </div>
+  );
+}
+
 function useVisitorCount() {
   const [count, setCount] = useState(0);
 
@@ -140,11 +196,6 @@ function App() {
         </p>
         <div className="hero-actions">
           <a href="#add-section" className="hero-btn primary">Get Started</a>
-          <div className="visitor-bar">
-            <span className="visitor-dot" />
-            <span className="visitor-label">Visitors</span>
-            <span className="visitor-count">{visitorCount}</span>
-          </div>
         </div>
       </header>
 
@@ -216,6 +267,19 @@ function App() {
           <ProgressTracker />
         </aside>
       </div>
+
+      <footer className="visitor-section" data-animate>
+        <div className="visitor-section-inner">
+          <div className="visitor-section-header">
+            <span className="visitor-section-icon">∑</span>
+            <span className="visitor-section-label">Unique Visitors</span>
+          </div>
+          <AnimatedCounter count={visitorCount} />
+          <p className="visitor-section-note">
+            Each unique browser counted once
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
