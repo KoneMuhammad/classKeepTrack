@@ -1,51 +1,34 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import type { StudentItem } from "./data";
 
-const CYCLE_MS = 240_000;
-const BREATHE_MS = 2000;
+type Props = { item: StudentItem | null };
 
-export default function FocusPrompt() {
-  const [cycle, setCycle] = useState(0);
-  const [breathe, setBreathe] = useState(0);
-  const startRef = useRef(Date.now());
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      const elapsed = Date.now() - startRef.current;
-      const c = Math.min(elapsed / CYCLE_MS, 1);
-      setCycle(c);
-
-      if (c >= 1) {
-        startRef.current = Date.now();
-        setCycle(0);
-      }
-    }, 100);
-
-    return () => clearInterval(id);
-  }, []);
+export default function FocusPrompt({ item }: Props) {
+  const [seconds, setSeconds] = useState(25 * 60);
+  const [running, setRunning] = useState(false);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setBreathe((Math.sin(Date.now() / BREATHE_MS) + 1) / 2);
-    }, 50);
+    if (!running) return;
+    const timer = window.setInterval(() => setSeconds((value) => {
+      if (value <= 1) { setRunning(false); return 0; }
+      return value - 1;
+    }), 1000);
+    return () => window.clearInterval(timer);
+  }, [running]);
 
-    return () => clearInterval(id);
-  }, []);
-
-  const intensity = cycle;
-  const opacity = 0.2 + intensity * 0.8;
-  const glow = intensity * 24;
-  const scale = 1 + intensity * 0.04 + breathe * 0.02;
+  const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const secs = String(seconds % 60).padStart(2, "0");
+  const reset = () => { setRunning(false); setSeconds(25 * 60); };
 
   return (
-    <div
-      className={`focus-prompt ${intensity >= 1 ? "flash" : ""}`}
-      style={{
-        opacity,
-        transform: `scale(${scale})`,
-        "--glow": `${glow}px`,
-      } as React.CSSProperties}
-    >
-      <span className="focus-prompt-text">FOCUS I'M ON IT</span>
-    </div>
+    <section className="focus-panel" aria-labelledby="focus-title">
+      <div><span className="focus-eyebrow">Focus mode</span><h2 id="focus-title">One clean block.</h2></div>
+      <div className="focus-clock" aria-live="polite">{minutes}:{secs}</div>
+      <p>{seconds === 0 ? "Session complete. Take a breath." : item ? `Start with ${item.title}.` : "Add an item to create your next study block."}</p>
+      <div className="focus-actions">
+        <button className="focus-start" onClick={() => setRunning((value) => !value)} disabled={!item || seconds === 0}>{running ? "Pause" : "Start 25 min"}</button>
+        {seconds !== 25 * 60 && <button className="focus-reset" onClick={reset}>Reset</button>}
+      </div>
+    </section>
   );
 }

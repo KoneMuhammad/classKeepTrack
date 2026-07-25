@@ -95,11 +95,16 @@ function useReveal() {
   return ref;
 }
 
-const MATH_CALC_SYMBOLS = ["∑", "∫", "π", "√", "Δ", "∞", "θ", "λ", "∂", "φ"];
+const CALCULATION_EXPRESSIONS = [
+  "L = Σ(y − ŷ)²",
+  "ŷ = Wx + b",
+  "w ← w − η∇J(w)",
+  "O(n log n)",
+];
 
 function AnimatedCounter({ count }: { count: number }) {
   const [display, setDisplay] = useState(0);
-  const [symbols, setSymbols] = useState<string[]>([]);
+  const [expressions, setExpressions] = useState<string[]>([]);
   const [calculating, setCalculating] = useState(true);
 
   useEffect(() => {
@@ -108,9 +113,9 @@ function AnimatedCounter({ count }: { count: number }) {
 
     let flashInterval: ReturnType<typeof setInterval>;
     flashInterval = setInterval(() => {
-      setSymbols(
+      setExpressions(
         Array.from({ length: 3 }, () =>
-          MATH_CALC_SYMBOLS[Math.floor(Math.random() * MATH_CALC_SYMBOLS.length)]
+          CALCULATION_EXPRESSIONS[Math.floor(Math.random() * CALCULATION_EXPRESSIONS.length)]
         )
       );
     }, 150);
@@ -121,7 +126,7 @@ function AnimatedCounter({ count }: { count: number }) {
         clearInterval(countInterval);
         clearInterval(flashInterval);
         setDisplay(count);
-        setSymbols([]);
+        setExpressions([]);
         setCalculating(false);
       } else {
         const progress = elapsed / 1200;
@@ -139,10 +144,10 @@ function AnimatedCounter({ count }: { count: number }) {
 
   return (
     <div className={`counter-anim ${calculating ? "is-calculating" : "is-done"}`}>
-      <div className="counter-math-symbols">
-        {symbols.map((s, i) => (
-          <span key={i} className="counter-float-symbol" style={{ animationDelay: `${i * 0.1}s` }}>
-            {s}
+      <div className="counter-math-expressions">
+        {expressions.map((expression, i) => (
+          <span key={i} className="counter-float-expression" style={{ animationDelay: `${i * 0.1}s` }}>
+            {expression}
           </span>
         ))}
       </div>
@@ -185,17 +190,16 @@ function App() {
   return (
     <div className="app" ref={rootRef}>
       <AmbientBackground />
-      <FocusPrompt />
 
       <header className="hero" data-animate>
-        <div className="hero-badge">NYC Student Tool</div>
-        <h1 className="hero-title">NYC Course Tracker</h1>
+        <div className="hero-badge">track your assignments</div>
+        <h1 className="hero-title">Coursework, in motion.</h1>
         <p className="hero-subtitle">
-          NYC coursework dashboard. Add homework, labs, assignments, and
-          due dates — all in one place.
+          A study desk for NYC coursework — organize what is due, follow a
+          clear path, and make steady progress.
         </p>
         <div className="hero-actions">
-          <a href="#add-section" className="hero-btn primary">Get Started</a>
+          <a href="#add-section" className="hero-btn primary">Add coursework <span>→</span></a>
         </div>
       </header>
 
@@ -264,14 +268,15 @@ function App() {
         </div>
 
         <aside className="layout-side" data-animate>
-          <ProgressTracker />
+          <ProgressTracker items={items} />
+          <FocusPrompt item={next} />
         </aside>
       </div>
 
       <footer className="visitor-section" data-animate>
         <div className="visitor-section-inner">
           <div className="visitor-section-header">
-            <span className="visitor-section-icon">∑</span>
+            <span className="visitor-section-icon">O(n log n)</span>
             <span className="visitor-section-label">Unique Visitors</span>
           </div>
           <AnimatedCounter count={visitorCount} />

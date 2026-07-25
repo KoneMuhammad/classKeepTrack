@@ -14,6 +14,7 @@ export default function ItemForm({ onAdd }: Props) {
   const [showExtra, setShowExtra] = useState(false);
   const [className, setClassName] = useState("");
   const [week, setWeek] = useState("");
+  const [confirmation, setConfirmation] = useState("");
 
   const canSubmit = title.trim() && dueDate;
 
@@ -42,6 +43,8 @@ export default function ItemForm({ onAdd }: Props) {
     setDueDate("");
     setWeek("");
     setClassName("");
+    setConfirmation(`${title.trim()} added to your study desk.`);
+    window.setTimeout(() => setConfirmation(""), 3200);
   }
 
   return (
@@ -71,14 +74,13 @@ export default function ItemForm({ onAdd }: Props) {
           <label className="form-date-label">Due Date</label>
           <input
             className="form-input form-input-date"
-            type="text"
-            placeholder="MM/DD/YYYY"
+            type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
         </div>
-        <button className="form-submit" type="submit" disabled={!canSubmit}>
-          +
+        <button className="form-submit" type="submit" disabled={!canSubmit} aria-label="Add coursework">
+          <span>+</span>
         </button>
       </div>
 
@@ -110,6 +112,7 @@ export default function ItemForm({ onAdd }: Props) {
           />
         </div>
       )}
+      {confirmation && <p className="form-confirmation" role="status">✓ {confirmation}</p>}
     </form>
   );
 }
